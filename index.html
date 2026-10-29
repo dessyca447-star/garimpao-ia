@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Garimpão IA V2</title>
+
+<style>
+body{
+  margin:0;
+  background:#090909;
+  color:#fff;
+  font-family:Arial,sans-serif;
+}
+
+.container{
+  padding:20px;
+  max-width:500px;
+  margin:auto;
+}
+
+.card{
+  background:#171717;
+  padding:18px;
+  border-radius:20px;
+  margin-top:20px;
+}
+
+input{
+  width:100%;
+  padding:15px;
+  border:none;
+  border-radius:14px;
+  background:#242424;
+  color:#fff;
+  margin-top:10px;
+  box-sizing:border-box;
+}
+
+button{
+  width:100%;
+  padding:16px;
+  border:none;
+  border-radius:16px;
+  background:#D4AF37;
+  color:#000;
+  font-size:17px;
+  margin-top:12px;
+  font-weight:bold;
+}
+
+.item{
+  background:#202020;
+  padding:14px;
+  border-radius:14px;
+  margin-top:10px;
+}
+
+.historico{
+  margin-top:20px;
+}
+
+.prompt{
+  background:#111;
+  padding:12px;
+  border-radius:12px;
+  margin-top:10px;
+  font-size:14px;
+  white-space:pre-wrap;
+}
+
+.btnSecundario{
+  background:#333;
+  color:#fff;
+  font-size:14px;
+  padding:10px;
+}
+
+h1{
+  margin-bottom:5px;
+}
+
+/* ===== GERADOR DE LOTE ===== */
+.lote-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.lote-style{background:#242424;color:#fff;border:1px solid #333;border-radius:14px;padding:12px;text-align:left;font-size:14px;cursor:pointer}
+.lote-style.ativo{border-color:#D4AF37;background:#2a2516}
+.lote-style small{display:block;color:#aaa;margin-top:5px;font-size:11px}
+.lote-qtd{display:flex;gap:7px;flex-wrap:wrap}
+.lote-qtd button{width:auto;flex:1;min-width:48px;background:#333;color:#fff;font-size:14px;padding:11px;margin-top:0}
+.lote-qtd button.ativo{background:#D4AF37;color:#000}
+#loteFotos{font-size:14px}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Garimpão IA V2</h1>
+
+<p>Fábrica de Conteúdo Viral</p>
+
+<div class="card">
+
+<h2>🎯 Missão do Dia</h2>
+
+<input
+id="produto"
+placeholder="Digite o produto"
+>
+
+<button onclick="gerar()">
+✨ Gerar 3 Roteiros
+</button>
+
+<button onclick="criarVideoIA()">
+🎬 Criar Vídeo IA
+</button>
+
+<div id="roteiros"></div>
+
+</div>
+
+
+<div class="card">
+<h2>🎬 Gerador de Vídeos em Lote</h2>
+<p style="color:#aaa;margin-top:-4px">Produto + fotos + estilo + quantidade. O Garimpão prepara tudo automaticamente.</p>
+<input id="loteProduto" placeholder="Nome do produto">
+<input id="loteLink" placeholder="🔗 Link da Shopee">
+<input id="loteFotos" type="file" accept="image/*" multiple>
+<p id="loteFotosInfo" style="color:#aaa;font-size:13px;margin:8px 0">Nenhuma foto selecionada.</p>
+<h3>🎨 Estilo global</h3>
+<div class="lote-grid">
+<button type="button" class="lote-style ativo" data-estilo="POV">👀 POV<small>Primeira pessoa + mãos interagindo.</small></button>
+<button type="button" class="lote-style" data-estilo="UNBOXING">📦 UNBOXING<small>Abertura e revelação do produto.</small></button>
+<button type="button" class="lote-style" data-estilo="REVIEW REAL">⭐ REVIEW REAL<small>Recomendação autêntica em cenário real.</small></button>
+<button type="button" class="lote-style" data-estilo="UGC">🎥 UGC<small>Espontâneo, natural e convincente.</small></button>
+<button type="button" class="lote-style" data-estilo="PROVADOR">👗 PROVADOR<small>Para moda e demonstração do caimento.</small></button>
+<button type="button" class="lote-style" data-estilo="PROVADOR/NARRAÇÃO">🎙️ PROVADOR/NARRAÇÃO<small>Provador com narração.</small></button>
+</div>
+<h3>🔢 Quantidade</h3>
+<div class="lote-qtd">
+<button type="button" class="ativo" data-qtd="3">3</button><button type="button" data-qtd="5">5</button><button type="button" data-qtd="10">10</button><button type="button" data-qtd="20">20</button><button type="button" data-qtd="50">50</button><button type="button" data-qtd="100">100</button>
+</div>
+<button type="button" onclick="prepararLote()">🚀 Preparar Lote</button>
+<div id="loteResultado" class="item" style="display:none"></div>
+</div>
+
+
+<div class="card">
+
+<h2>📊 Painel de Vendas</h2>
+<div class="item">
+  <h3>📈 Faturamento</h3>
+  <p id="totalFaturamento">R$ 0,00</p>
+</div>
+<div class="item">
+  <h3>🖱️ Cliques</h3>
+  <p id="totalCliques">0</p>
+</div>
+
+<div class="item">
+  <h3>💰 Vendas</h3>
+  <p id="totalVendas">0</p>
+</div>
+
+<div class="item">
+  <h3>💵 Comissões</h3>
+  <p id="totalComissoes">R$ 0,00</p>
+</div>
+
+<div class="item">
+  <h3>📦 Produtos vendidos</h3>
+  <p id="produtosVendidos">0</p>
+</div>
+
+</div><div class="card">
+
+<h2>📊 Painel de Vendas</h2>
+
+<div class="item">
+  <h3>🖱️ Cliques</h3>
+  <p id="totalCliques">0</p>
+</div>
+
+<div class="item">
+  <h3>💰 Vendas</h3>
+  <p id="totalVendas">0</p>
+</div>
+
+<div class="item">
+  <h3>💵 Comissões</h3>
+  <p id="totalComissoes">R$ 0,00</p>
+</div>
+
+<div class="item">
+  <h3>📦 Produtos vendidos</h3>
+  <p id="produtosVendidos">0</p>
+</div>
+
+</div><div class="card">
+
+<h2>🛒 Registrar Venda</h2>
+
+<input
+id="vendaProduto"
+placeholder="Nome do produto vendido"
+>
+
+<input
+id="vendaValor"
+type="number"
+placeholder="Valor da venda"
+>
+
+<input
+id="vendaComissao"
+type="number"
+placeholder="Comissão (%)"
+>
+
+<button onclick="registrarVenda()">
+💰 Registrar Venda
+</button>
+
+<div id="listaVendas"></div>
+
+</div>
+<div class="card historico">
+  <div class="card">
+
+<h2>📦 Meus Produtos</h2>
+
+<input
+id="nomeProduto"
+placeholder="Nome do produto"
+>
+
+<input
+id="linkProduto"
+placeholder="Link do produto"
+>
+
+<input
+id="precoProduto"
+type="number"
+placeholder="Preço"
+>
+
+<input
+id="comissaoProduto"
+type="number"
+placeholder="Comissão (%)"
+>
+
+<input
+id="nichoProduto"
+placeholder="Nicho"
+>
+
+<button onclick="adicionarProduto()">
+➕ Adicionar Produto
+</button>
+
+<div id="listaProdutos"></div>
+
+</div>
+
+<h2>📚 Histórico de Conteúdo</h2>
+<div class="card">
+
+<h2>🖱️ Registrar Clique</h2>
+
+<input
+id="cliqueProduto"
+placeholder="Produto clicado"
+>
+
+<button onclick="registrarClique()">
+🔗 Registrar Clique
+</button>
+
+</div>
+<div id="historico">
+Nenhum conteúdo criado ainda.
+</div>
+
+<button
+class="btnSecundario"
+onclick="limparHistorico()"
+>
+🗑️ Limpar Histórico
+</button>
+
+</div>
+
+</div>
+
+
+<script>
+
+function produtoAtual(){
+
+  const campo =
+  document.getElementById("produto");
+
+  if(
+    campo &&
+    campo.value.trim()
+  ){
+
+    return campo.value.trim();
+
+  }
+
+  return "Produto";
+
+}
+
+
+
+/* =========================
+   GERADOR DE LOTE
+========================= */
+let loteEstilo="POV", loteQuantidade=3;
+document.querySelectorAll(".lote-style").forEach(function(botao){botao.addEventListener("click",function(){document.querySelectorAll(".lote-style").forEach(function(b){b.classList.remove("ativo")});botao.classList.add("ativo");loteEstilo=botao.dataset.estilo})});
+document.querySelectorAll(".lote-qtd button").forEach(function(botao){botao.addEventListener("click",function(){document.querySelectorAll(".lote-qtd button").forEach(function(b){b.classList.remove("ativo")});botao.classList.add("ativo");loteQuantidade=Number(botao.dataset.qtd)})});
+document.getElementById("loteFotos").addEventListener("change",function(){const total=this.files.length;document.getElementById("loteFotosInfo").textContent=total?total+" foto(s) selecionada(s).":"Nenhuma foto selecionada."});
+async function prepararLote(){
+  const produto=document.getElementById("loteProduto").value.trim();
+  const link=document.getElementById("loteLink").value.trim();
+  const arquivos=Array.from(document.getElementById("loteFotos").files || []).slice(0,3);
+  const area=document.getElementById("loteResultado");
+  if(!produto){alert("Digite o nome do produto.");return}
+  if(!arquivos.length){alert("Adicione pelo menos uma foto do produto.");return}
+
+  area.style.display="block";
+  area.innerHTML=`<h3>⏳ Preparando vídeo com IA...</h3><p><b>Produto:</b> ${produto}</p><p><b>Estilo:</b> ${loteEstilo}</p><p><b>Quantidade:</b> ${loteQuantidade} vídeo(s)</p><p style="color:#aaa">O primeiro vídeo será gerado agora. Depois poderemos ampliar para lotes maiores.</p>`;
+
+  try{
+    const images=[];
+    for(const file of arquivos){
+      const img=await compactarImagem(file);
+      images.push(img);
+    }
+
+    const prompts=[];
+    for(let i=1;i<=loteQuantidade;i++){
+      prompts.push(montarPromptLote(produto,link,loteEstilo,i));
+    }
+
+    const resultados=[];
+    for(let i=0;i<prompts.length;i++){
+      area.innerHTML=`<h3>🎬 Gerando vídeo ${i+1} de ${prompts.length}...</h3><p><b>Produto:</b> ${produto}</p><p><b>Estilo:</b> ${loteEstilo}</p><p style="color:#aaa">A IA está criando o vídeo. Isso pode levar alguns segundos.</p>`;
+      const r=await fetch("/.netlify/functions/gerar-video",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt:prompts[i],images})});
+      const data=await r.json();
+      if(!r.ok || !data.ok) throw new Error(data.error || "Não foi possível gerar o vídeo.");
+      resultados.push(data.video);
+    }
+
+    let html=`<h3>✅ ${resultados.length} vídeo(s) gerado(s)!</h3><p><b>Produto:</b> ${produto}</p><p><b>Estilo:</b> ${loteEstilo}</p>`;
+    resultados.forEach((v,i)=>{
+      const src=`data:${v.mime_type || "video/mp4"};base64,${v.data}`;
+      html+=`<div class="item"><h3>🎥 Vídeo ${i+1}</h3><video controls playsinline style="width:100%;border-radius:14px;background:#000" src="${src}"></video><a download="garimpao-${i+1}.mp4" href="${src}" style="display:block;text-align:center;background:#D4AF37;color:#000;padding:14px;border-radius:14px;margin-top:10px;font-weight:bold;text-decoration:none">⬇️ Salvar vídeo</a></div>`;
+    });
+    if(link) html+=`<p style="color:#aaa">🔗 Link Shopee salvo no lote.</p>`;
+    area.innerHTML=html;
+    localStorage.setItem("loteGarimpao",JSON.stringify({produto,link,estilo:loteEstilo,quantidade:loteQuantidade,fotos:arquivos.length,data:new Date().toLocaleString("pt-BR")}));
+  }catch(err){
+    area.innerHTML=`<h3>❌ Não foi possível gerar</h3><p>${escapeHtml(err.message || "Erro desconhecido")}</p><p style="color:#aaa">Se aparecer que a chave Gemini não está configurada, precisamos configurar a variável GEMINI_API_KEY no Netlify.</p>`;
+  }
+}
+
+function escapeHtml(text){return String(text).replace(/[&<>'"]/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'})[c]})}
+
+function compactarImagem(file){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=()=>{
+      const img=new Image();
+      img.onload=()=>{
+        const max=1200, scale=Math.min(1,max/Math.max(img.width,img.height));
+        const canvas=document.createElement("canvas");
+        canvas.width=Math.max(1,Math.round(img.width*scale));
+        canvas.height=Math.max(1,Math.round(img.height*scale));
+        const ctx=canvas.getContext("2d");
+        ctx.drawImage(img,0,0,canvas.width,canvas.height);
+        const dataUrl=canvas.toDataURL("image/jpeg",0.78);
+        resolve({mime_type:"image/jpeg",data:dataUrl.split(",")[1]});
+      };
+      img.onerror=reject;
+      img.src=reader.result;
+    };
+    reader.onerror=reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function montarPromptLote(produto,link,estilo,numero){
+  const estilos={
+    "POV":"filmagem em primeira pessoa, mãos interagindo com o produto, foco realista no produto",
+    "UNBOXING":"unboxing natural, mãos abrindo a embalagem e revelando o produto",
+    "REVIEW REAL":"review autêntico em ambiente cotidiano, aparência espontânea e confiável",
+    "UGC":"conteúdo UGC natural, espontâneo, convincente e com linguagem de criadora de conteúdo",
+    "PROVADOR":"vídeo de provador de moda, pessoa usando a peça e mostrando caimento e detalhes",
+    "PROVADOR/NARRAÇÃO":"vídeo de provador com demonstração da peça e narração natural"
+  };
+  return `Crie um vídeo vertical 9:16 para TikTok Shop, com aparência de anúncio UGC realista e comercial. Produto: ${produto}. Estilo: ${estilo}. Direção visual: ${estilos[estilo] || estilos.UGC}. Vídeo número ${numero}. Use a foto enviada como referência principal do produto e preserve sua aparência, cor e formato. Faça movimentos naturais de câmera e mãos. Estrutura: 0-2s gancho visual forte; 2-5s apresentação do produto; 5-8s demonstração do principal benefício; 8-10s CTA curto incentivando a conferir o produto na Shopee. Não invente características que não estejam visíveis ou informadas. Gere vídeo curto, vertical, dinâmico, com áudio natural em português brasileiro quando suportado e sem texto ilegível na tela. ${link?"Há um link da Shopee associado ao produto, mas não mostre o URL na imagem.":""}`;
+}
+
+/* =========================
+   GERAR 3 ROTEIROS
+========================= */
+
+function gerar(){
+
+  const produto =
+  produtoAtual();
+
+  document.getElementById("roteiros").innerHTML = `
+
+  <div class="item">
+
+  <h3>🎯 Roteiro 1</h3>
+
+  <p>
+  <b>Gancho:</b>
+  Você precisa conhecer esse ${produto}.
+  </p>
+
+  <p>
+  Mostre o produto rapidamente
+  e destaque o principal benefício.
+  </p>
+
+  <p>
+  <b>CTA:</b>
+  Clique no link para conferir.
+  </p>
+<button onclick="criarVideoDoRoteiro(1)">
+🎬 Criar Vídeo deste Roteiro
+</button>
+  </div>
+
+
+  <div class="item">
+
+  <h3>🔥 Roteiro 2</h3>
+
+  <p>
+  <b>Gancho:</b>
+  Eu não esperava que esse ${produto}
+  fosse tão útil.
+  </p>
+
+  <p>
+  Mostre uma demonstração rápida
+  do produto.
+  </p>
+
+  <p>
+  <b>CTA:</b>
+  Veja o preço no link.
+  </p>
+<button onclick="criarVideoDoRoteiro(2)">
+🎬 Criar Vídeo deste Roteiro
+</button>
+  </div>
+
+
+  <div class="item">
+
+  <h3>💰 Roteiro 3</h3>
+
+  <p>
+  <b>Gancho:</b>
+  3 motivos para você conhecer
+  esse ${produto}.
+  </p>
+
+  <p>
+  Apresente três benefícios
+  de forma rápida.
+  </p>
+
+  <p>
+  <b>CTA:</b>
+  Clique e veja onde encontrar.
+  </p>
+<button
+class="btnSecundario"
+onclick="criarVideoDoRoteiro(3)">
+🎬 Criar Vídeo deste Roteiro
+</button>
+  </div>
+
+  `;
+
+}
+/* =========================
+   CRIAR VÍDEO IA
+========================= */
+
+function criarVideoIA(){
+
+  const produto =
+  produtoAtual();
+
+  const prompt = `Crie um vídeo vertical 9:16 de 15 segundos para TikTok Shop.
+
+Produto: ${produto}
+
+0-3s: Gancho muito forte.
+4-8s: Mostrar o principal benefício.
+9-12s: Demonstração rápida.
+13-15s: CTA "Clique no link antes que acabe".
+
+Estilo TikTok Shop.
+Voz feminina brasileira.
+Legendas grandes.
+Fundo moderno.`;
+
+
+  salvarHistorico(
+    produto,
+    prompt
+  );
+
+
+  localStorage.setItem(
+    "ultimoPrompt",
+    prompt
+  );
+
+  localStorage.setItem(
+    "ultimoProduto",
+    produto
+  );
+
+
+  if(navigator.clipboard){
+
+    navigator.clipboard.writeText(prompt)
+
+    .then(function(){
+
+      alert(
+        "🎬 Prompt criado e copiado!"
+      );
+
+    })
+
+    .catch(function(){
+
+      alert(
+        "🎬 Prompt criado para: "
+        + produto
+      );
+
+    });
+
+  }else{
+
+    alert(
+      "🎬 Prompt criado para: "
+      + produto
+    );
+
+  }
+
+}
+function criarVideoDoRoteiro(numero){
+
+  const produto = produtoAtual();
+
+  let roteiro = "";
+
+  if(numero === 1){
+    roteiro = `
+Gancho: Você precisa conhecer esse ${produto}.
+Mostre o produto rapidamente e destaque o principal benefício.
+CTA: Clique no link para conferir.
+`;
+  }
+  else if(numero === 2){
+    roteiro = `
+Gancho: Eu não esperava que esse ${produto} fosse tão útil.
+Mostre uma demonstração rápida do produto.
+CTA: Veja o preço no link.
+`;
+  }
+
+  else if(numero === 3){
+    roteiro = `
+Gancho: 3 motivos para você conhecer esse ${produto}.
+Apresente três benefícios de forma rápida.
+CTA: Clique e veja onde encontrar.
+`;
+  }
+  const prompt = `Crie um vídeo vertical 9:16 de 15 segundos para TikTok Shop.
+
+Produto: ${produto}
+
+Use exatamente este roteiro:
+${roteiro}
+
+Estilo TikTok Shop.
+Voz feminina brasileira.
+Legendas grandes.
+Fundo moderno.
+Vídeo dinâmico e comercial.`;
+
+  navigator.clipboard.writeText(prompt);
+
+  alert("🎬 Vídeo do Roteiro " + numero + " preparado e copiado!");
+}
+
+/* =========================
+   HISTÓRICO
+========================= */
+
+function salvarHistorico(
+  produto,
+  prompt
+){
+
+  let historico =
+  JSON.parse(
+    localStorage.getItem(
+      "historicoGarimpao"
+    )
+  ) || [];
+
+
+  historico.unshift({
+
+    produto: produto,
+
+    prompt: prompt,
+
+    data:
+    new Date().toLocaleString(
+      "pt-BR"
+    )
+
+  });
+
+
+  if(historico.length > 20){
+
+    historico =
+    historico.slice(0,20);
+
+  }
+
+
+  localStorage.setItem(
+
+    "historicoGarimpao",
+
+    JSON.stringify(historico)
+
+  );
+
+
+  mostrarHistorico();
+
+}
+
+
+/* =========================
+   MOSTRAR HISTÓRICO
+========================= */
+
+function mostrarHistorico(){
+
+  const area =
+  document.getElementById(
+    "historico"
+  );
+
+
+  let historico =
+  JSON.parse(
+    localStorage.getItem(
+      "historicoGarimpao"
+    )
+  ) || [];
+
+
+  if(
+    historico.length === 0
+  ){
+
+    area.innerHTML =
+    "Nenhum conteúdo criado ainda.";
+
+    return;
+
+  }
+
+
+  area.innerHTML = "";
+
+
+  historico.forEach(
+    function(item){
+
+      const bloco =
+      document.createElement(
+        "div"
+      );
+
+      bloco.className =
+      "item";
+
+
+      bloco.innerHTML = `
+
+      <b>📦 ${item.produto}</b>
+
+      <small>
+      <br>${item.data}
+      </small>
+
+      <div class="prompt">
+      ${item.prompt}
+      </div>
+
+      <button
+      class="btnSecundario"
+      onclick='copiarHistorico(${JSON.stringify(item.prompt)})'
+      >
+      📋 Copiar Prompt
+      </button>
+
+      `;
+
+
+      area.appendChild(
+        bloco
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================
+   COPIAR HISTÓRICO
+========================= */
+
+function copiarHistorico(
+  texto
+){
+
+  navigator.clipboard
+  .writeText(texto)
+
+  .then(function(){
+
+    alert(
+      "📋 Prompt copiado!"
+    );
+
+  });
+
+}
+
+
+/* =========================
+   LIMPAR HISTÓRICO
+========================= */
+
+function limparHistorico(){
+
+  if(
+    confirm(
+      "Apagar todo o histórico?"
+    )
+  ){
+
+    localStorage.removeItem(
+      "historicoGarimpao"
+    );
+
+    mostrarHistorico();
+
+  }
+
+}
+
+
+/* =========================
+   INICIAR
+========================= */
+
+mostrarHistorico();
+function adicionarProduto(){
+
+  const nome = document.getElementById("nomeProduto").value.trim();
+  const link = document.getElementById("linkProduto").value.trim();
+  const preco = document.getElementById("precoProduto").value;
+  const comissao = document.getElementById("comissaoProduto").value;
+  const nicho = document.getElementById("nichoProduto").value.trim();
+
+  if(!nome){
+    alert("Digite o nome do produto.");
+    return;
+  }
+
+  let produtos = JSON.parse(
+    localStorage.getItem("produtosGarimpao")
+  ) || [];
+
+  produtos.unshift({
+    id: Date.now(),
+    nome: nome,
+    link: link,
+    preco: preco,
+    comissao: comissao,
+    nicho: nicho,
+    favorito: false
+  });
+
+  localStorage.setItem(
+    "produtosGarimpao",
+    JSON.stringify(produtos)
+  );
+
+  document.getElementById("nomeProduto").value = "";
+  document.getElementById("linkProduto").value = "";
+  document.getElementById("precoProduto").value = "";
+  document.getElementById("comissaoProduto").value = "";
+  document.getElementById("nichoProduto").value = "";
+
+  mostrarProdutos();
+}
+
+
+function mostrarProdutos(){
+
+  const area = document.getElementById("listaProdutos");
+
+  if(!area) return;
+
+  const produtos = JSON.parse(
+    localStorage.getItem("produtosGarimpao")
+  ) || [];
+
+  if(produtos.length === 0){
+
+    area.innerHTML =
+      "<p>Nenhum produto cadastrado ainda.</p>";
+
+    return;
+  }
+
+  area.innerHTML = "";
+
+  produtos.forEach(function(produto){
+
+    const bloco = document.createElement("div");
+
+    bloco.className = "item";
+
+    bloco.innerHTML = `
+      <h3>📦 ${produto.nome}</h3>
+
+<button
+class="btnSecundario"
+onclick="favoritarProduto(${produto.id})">
+⭐ Favoritar
+</button>
+
+      <p>💰 Preço: R$ ${produto.preco || "—"}</p>
+
+      <p>💵 Comissão: ${produto.comissao || "—"}%</p>
+
+      <p>🏷️ Nicho: ${produto.nicho || "—"}</p>
+
+      <button
+      class="btnSecundario"
+      onclick="usarProduto(${produto.id})">
+      🎬 Criar Conteúdo
+      </button>
+
+      <button
+      class="btnSecundario"
+      onclick="copiarLink('${produto.link}')">
+      📋 Copiar Link
+      </button>
+
+      <button
+      class="btnSecundario"
+      onclick="excluirProduto(${produto.id})">
+      🗑️ Excluir
+      </button>
+    `;
+
+    area.appendChild(bloco);
+
+  });
+}
+
+
+function usarProduto(id){
+
+  const produtos = JSON.parse(
+    localStorage.getItem("produtosGarimpao")
+  ) || [];
+
+  const produto = produtos.find(function(item){
+    return item.id === id;
+  });
+
+  if(!produto) return;
+
+  const campo = document.getElementById("produto");
+
+  if(campo){
+    campo.value = produto.nome;
+  }
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+
+  // Gera os 3 roteiros automaticamente
+  if(typeof gerar === "function"){
+    gerar();
+  }
+
+  alert(
+    "📦 " + produto.nome +
+    "\n\n✍️ Os roteiros foram gerados!"
+  );
+}
+
+
+function copiarLink(link){
+
+  if(!link){
+    alert("Este produto não possui link.");
+    return;
+  }
+
+  navigator.clipboard.writeText(link)
+  .then(function(){
+
+    alert("📋 Link copiado!");
+
+  });
+
+}
+
+
+function excluirProduto(id){
+
+  let produtos = JSON.parse(
+    localStorage.getItem("produtosGarimpao")
+  ) || [];
+
+  produtos = produtos.filter(
+    function(item){
+      return item.id !== id;
+    }
+  );
+
+  localStorage.setItem(
+    "produtosGarimpao",
+    JSON.stringify(produtos)
+  );
+
+  mostrarProdutos();
+}
+
+function favoritarProduto(id){
+
+  let produtos = JSON.parse(
+    localStorage.getItem("produtosGarimpao")
+  ) || [];
+
+  produtos = produtos.map(function(produto){
+
+    if(produto.id === id){
+      produto.favorito = !produto.favorito;
+    }
+
+    return produto;
+
+  });
+
+  localStorage.setItem(
+    "produtosGarimpao",
+    JSON.stringify(produtos)
+  );
+
+  mostrarProdutos();
+
+}
+mostrarProdutos();
+function registrarVenda(){
+
+  const produto = document.getElementById("vendaProduto").value.trim();
+  const valor = parseFloat(document.getElementById("vendaValor").value);
+  const comissao = parseFloat(document.getElementById("vendaComissao").value);
+
+  if(!produto || isNaN(valor) || isNaN(comissao)){
+    alert("Preencha produto, valor e comissão.");
+    return;
+  }
+
+  let vendas = JSON.parse(
+    localStorage.getItem("vendasGarimpao")
+  ) || [];
+
+  const valorComissao = valor * (comissao / 100);
+
+  vendas.unshift({
+    id: Date.now(),
+    produto: produto,
+    valor: valor,
+    comissao: comissao,
+    valorComissao: valorComissao,
+    data: new Date().toLocaleDateString("pt-BR")
+  });
+
+  localStorage.setItem(
+    "vendasGarimpao",
+    JSON.stringify(vendas)
+  );
+
+  document.getElementById("vendaProduto").value = "";
+  document.getElementById("vendaValor").value = "";
+  document.getElementById("vendaComissao").value = "";
+
+  mostrarVendas();
+  atualizarPainel();
+
+  alert("💰 Venda registrada!");
+}
+
+
+function mostrarVendas(){
+
+  const area = document.getElementById("listaVendas");
+
+  if(!area) return;
+
+  const vendas = JSON.parse(localStorage.getItem("vendasGarimpao")) || [];
+
+  if(vendas.length === 0){
+    area.innerHTML = "<p>Nenhuma venda registrada.</p>";
+    return;
+  }
+
+  area.innerHTML = "";
+
+  vendas.forEach(function(venda){
+
+    const bloco = document.createElement("div");
+
+    bloco.className = "item";
+
+    bloco.innerHTML = `
+      <h3>📦 ${venda.produto}</h3>
+      <p>💰 Venda: R$ ${venda.valor.toFixed(2)}</p>
+      <p>💵 Comissão: R$ ${venda.valorComissao.toFixed(2)}</p>
+      <p>📅 ${venda.data}</p>
+
+      <button
+      class="btnSecundario"
+      onclick="excluirVenda(${venda.id})">
+      🗑️ Excluir
+      </button>
+    `;
+
+    area.appendChild(bloco);
+
+  });
+}
+
+
+function excluirVenda(id){
+
+  let vendas = JSON.parse(
+    localStorage.getItem("vendasGarimpao")
+  ) || [];
+
+  vendas = vendas.filter(function(venda){
+    return venda.id !== id;
+  });
+
+  localStorage.setItem(
+    "vendasGarimpao",
+    JSON.stringify(vendas)
+  );
+
+  mostrarVendas();
+  atualizarPainel();
+}
+
+function registrarClique(){
+
+  const produto = document.getElementById("cliqueProduto").value.trim();
+
+  if(!produto){
+    alert("Digite o produto clicado.");
+    return;
+  }
+
+  let cliques = JSON.parse(localStorage.getItem("cliquesGarimpao")) || [];
+
+  cliques.push({
+    id: Date.now(),
+    produto: produto,
+    data: new Date().toLocaleDateString("pt-BR")
+  });
+
+  localStorage.setItem(
+    "cliquesGarimpao",
+    JSON.stringify(cliques)
+  );
+
+  document.getElementById("cliqueProduto").value = "";
+
+  const contador = document.getElementById("totalCliques");
+
+  if(contador){
+    contador.textContent = cliques.length;
+  }
+
+  alert("🖱️ Clique registrado!");
+}
+function atualizarPainel(){
+
+  const vendas = JSON.parse(localStorage.getItem("vendasGarimpao")) || [];
+
+  let totalVendas = vendas.length;
+let totalFaturamento = 0;
+let totalComissoes = 0;
+let produtosVendidos = vendas.length;
+  vendas.forEach(function(venda){
+
+  totalFaturamento += Number(venda.valor) || 0;
+
+  totalComissoes += Number(venda.valorComissao) || 0;
+
+});
+
+  const vendasEl = document.getElementById("totalVendas");
+const faturamentoEl = document.getElementById("totalFaturamento");
+const comissoesEl = document.getElementById("totalComissoes");
+  const produtosEl = document.getElementById("produtosVendidos");
+if(faturamentoEl){
+
+  faturamentoEl.textContent =
+    "R$ " + totalFaturamento.toFixed(2).replace(".", ",");
+
+}
+  if(vendasEl){
+    vendasEl.textContent = totalVendas;
+  }
+
+  if(comissoesEl){
+    comissoesEl.textContent =
+      "R$ " + totalComissoes.toFixed(2).replace(".", ",");
+  }
+
+  if(produtosEl){
+    produtosEl.textContent = produtosVendidos;
+  }
+}
+
+
+mostrarVendas();
+atualizarPainel();
+
+const cliques = JSON.parse(localStorage.getItem("cliquesGarimpao")) || [];
+
+const contadorCliques = document.getElementById("totalCliques");
+
+if(contadorCliques){
+  contadorCliques.textContent = cliques.length;
+}
+
+</script>
+
+</body>
+</html>
